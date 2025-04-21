@@ -1,5 +1,6 @@
 import random
 import time
+import math
 random.seed(5)
 
 class QausiParticle1D:
@@ -15,14 +16,20 @@ class QausiParticle1D:
         self.dy = dy
         self.Relaxation_Rate = Relaxation_Rate
 
-    def Update_Pos(self):
+    def Update_Pos(self, min_x, max_x, min_y, max_y):
         self.x = self.x + self.dx
         self.y = self.y + self.dy
+
+        if self.x > max_x: self.x = max_x
+        if self.x < min_x: self.x = min_x
+        if self.y > max_y: self.y = max_y
+        if self.y < min_x: self.y = min_y
+
         self.xpath.append(self.x)
         self.ypath.append(self.y)
 
     def Check_If_Relaxed(self):
-        return False #random.random() > (1 - self.Relaxation_Rate)
+        return random.random() < self.Relaxation_Rate
     
 #Testing QuasiParticle1D
 '''
