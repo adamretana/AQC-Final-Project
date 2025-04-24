@@ -1,7 +1,8 @@
-import random
 import time
 import math
-random.seed(5)
+import numpy as np
+
+rng = np.random.default_rng()
 
 class QausiParticle1D:
 
@@ -29,7 +30,7 @@ class QausiParticle1D:
         self.ypath.append(self.y)
 
     def Check_If_Relaxed(self):
-        return random.random() < self.Relaxation_Rate
+        return rng.random() < self.Relaxation_Rate
     
 #Testing QuasiParticle1D
 '''

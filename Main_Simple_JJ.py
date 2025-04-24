@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.path import Path
 import numpy as np
 
 import matplotlib.animation as animation
@@ -25,10 +24,10 @@ def main():
     num_escaped = 0
     num_captured = 0
 
-    #active_qps.append(QP(random.randint(2,10), 2, random.uniform(-.2,.2), random.uniform(.05,.2), 0.1))
+    #active_qps.append(QP(rng.integers(2,10), 2, rng.uniform(-.2,.2), rng.uniform(.05,.2), rng.random()))
     for t in range(t0, tf):
 
-        if t % 10 == 0: active_qps.append(QP(rng.integers(2,10), 2, rng.uniform(-.2,.2), rng.uniform(.05,.2), rng.random()))
+        if t % 10 == 0: active_qps.append(QP(rng.uniform(2,10), 2, rng.uniform(-.2,.2), rng.uniform(.05,.2), rng.random()))
 
         qp_to_delete = []
         for i, qp in zip(range(0, len(active_qps)), active_qps):
@@ -70,44 +69,16 @@ def main():
 
     ax.scatter(relaxation_pts_x, relaxation_pts_y, marker='x', color='purple')
 
-    ax.set_xlim([0, 10])
-    ax.set_ylim([0, 20])
-
-    # Drawing Simple layers
-    Substrate = patches.Rectangle((0+2,0), 6, 6, alpha=.5, color='black')
-    S_thin_1 = patches.Rectangle((0+2,6), 4, 2, alpha=.5, color='b')
-    S_thin_2 = patches.Rectangle((5+2,6), 1, 2, alpha=.5, color='b')
-    S_thick_1 = patches.Rectangle((0+2,8), 2, 6, alpha=.5, color='purple')
-    ax.add_patch(Substrate)
-    ax.add_patch(S_thin_1)
-    ax.add_patch(S_thin_2)
-    ax.add_patch(S_thick_1)
-
-    # Drawing complex right thick layer
-    pathdata = [ 
-        (Path.MOVETO, (5, 8)),
-        (Path.LINETO, (5, 14)),
-        (Path.LINETO, (6, 14)),
-        (Path.LINETO, (6, 12)),
-        (Path.LINETO, (7, 12)),
-        (Path.LINETO, (7, 14)),
-        (Path.LINETO, (8, 14)),
-        (Path.LINETO, (8, 8)),
-        (Path.LINETO, (7, 8)),
-        (Path.LINETO, (7, 6)),
-        (Path.LINETO, (6, 6)),
-        (Path.LINETO, (6, 8)),
-        (Path.CLOSEPOLY, (1.58, -2.57)),
-    ]
-    codes, verts = zip(*pathdata)
-    path = Path(verts, codes)
-    patch = patches.PathPatch(
-        path, color='purple', alpha=0.5)
-    ax.add_patch(patch)
-
-    # Drawing Insulating Layer
-    ax.add_line()
-
+    ax.set_xlim([0, 22])
+    ax.set_ylim([0, 10])
+    S1 = patches.Rectangle((2,2), 8, 6, alpha=.5, color='r')
+    Insulator = patches.Rectangle((10,2), 2, 6, alpha=.5, color='black')
+    S2 = patches.Rectangle((12,2), 8, 6, alpha=.5, color='g')
+    S_trap = patches.Rectangle((4,4), 2, 2, alpha=.5, color='b')
+    ax.add_patch(S1)
+    ax.add_patch(S2)
+    ax.add_patch(Insulator)
+    ax.add_patch(S_trap)
 
     plt.show()
 
