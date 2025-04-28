@@ -3,7 +3,7 @@ import matplotlib.patches as patches
 import numpy as np
 
 import matplotlib.animation as animation
-from QuasiParticle import QausiParticle1D as QP
+from Phonon import QausiParticle1D as QP
 
 
 rng = np.random.default_rng()

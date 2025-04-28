@@ -1,58 +1,94 @@
-import time
-import math
 import numpy as np
+import math
+
+from Calculations import *
 
 rng = np.random.default_rng()
 
-class QausiParticle1D:
+class QuasiParticle:
 
-    relaxed = False
+    boltzmann_constant = math.pow(1.380649, -23) # joules / kelvin
+    Tc_aluminum = 1.2 # kelvin
 
-    def __init__(self, x, y, dx, dy, Relaxation_Rate):
-        self.x = x
-        self.y = y
-        self.xpath = [x]
-        self.ypath = [y]
-        self.dx = dx
-        self.dy = dy
-        self.Relaxation_Rate = Relaxation_Rate
+    Annihilated = False
+    density_cooper_pairs = math.pow(2.8, 0^6) # 1 / micrometers^3
+    band_gap_no_QPs = 1.764 * boltzmann_constant * Tc_aluminum
+    trapped = False
 
-    def Update_Pos(self, min_x, max_x, min_y, max_y):
-        self.x = self.x + self.dx
-        self.y = self.y + self.dy
+    def __init__(self, position, position_bounds, energy, trap_bounds=None):
+        self.pos = position
+        self.bounds = position_bounds
+        self.trap = trap_bounds
+        self.E = energy
 
-        if self.x > max_x: self.x = max_x
-        if self.x < min_x: self.x = min_x
-        if self.y > max_y: self.y = max_y
-        if self.y < min_x: self.y = min_y
+    def Update_Pos(self, Ei=0, Ej=0):
+        move_options_x = []
+        move_options_y = []
 
-        self.xpath.append(self.x)
-        self.ypath.append(self.y)
+        scattered = self.Check_Scattered(Ei, Ej)
 
-    def Check_If_Relaxed(self):
-        return rng.random() < self.Relaxation_Rate
-    
-#Testing QuasiParticle1D
-'''
-def main():
-    t0 = 0
-    tf = 100
-    active_qps = []
+        if self.trap != None:
+            if self.Check_Inside_Trap():
+                if self.trapped:
+                    if self.pos[0] == 4: 
+                        if scattered: move_options_x = [0, -1]
+                        else: move_options_x = [0, 1]
+                    if self.pos[0] == 8: 
+                        if scattered: move_options_x = [0, 1]
+                        else: move_options_x = [0, -1]
+                    if self.pos[1] == 4: 
+                        if scattered: move_options_y = [0, -1]
+                        else: move_options_y = [0, 1]
+                    if self.pos[1] == 8: 
+                        if scattered: move_options_y = [0, 1]
+                        else: move_options_y = [0, -1]
+                    if scattered: self.trapped = False
+                else:
+                    if self.pos[0] == 4: 
+                        if scattered: move_options_x = [0, 1]
+                        else: move_options_x = [0, -1]
+                    if self.pos[0] == 8: 
+                        if scattered: move_options_x = [0, -1]
+                        else: move_options_x = [0, 1]
+                    if self.pos[1] == 4: 
+                        if scattered: move_options_y = [0, 1]
+                        else: move_options_y = [0, -1]
+                    if self.pos[1] == 8: 
+                        if scattered: move_options_y = [0, -1]
+                        else: move_options_y = [0, 1]
+                    if scattered: self.trapped = True
 
-    for t in range(t0, tf):
-        surface = list("_"*10)
+        if self.pos[0] == self.bounds[0][0]: move_options_x = [0, 1]
+        elif self.pos[0] == self.bounds[0][1]: move_options_x = [0, -1]
+        if move_options_x == []: move_options_x = [-1, 0, 1]
+        self.pos[0] = self.pos[0] + rng.choice(move_options_x)
 
-        if random.random() > .5: active_qps.append(QausiParticle1D(x=random.randint(0,9), dx=random.choice([-1,1]), Relaxation_Rate=random.random(), y=0, dy=0))
+        if self.pos[1] == self.bounds[1][0]: move_options_y = [0, 1]
+        elif self.pos[1] == self.bounds[1][1]: move_options_y = [0, -1]
+        if move_options_y == []: move_options_y = [-1, 0, 1]
+        self.pos[1] = self.pos[1] + rng.choice(move_options_y)
 
-        for qp in active_qps:
-            if qp.relaxed: continue
-            surface[qp.x] = '+'
-            qp.Update_Pos()
-            if qp.Check_If_Relaxed(): qp.relaxed = True
-            elif not 0 <= qp.x <= 9: qp.relaxed = True
-        surface_str = "".join(surface)
-        print("{0:4}: {1}".format(t, surface_str))
-        time.sleep(.1)
+    def Check_Scattered(self, Ei_factor, Ej_factor):
+        chance = Scattering_Chance(Ei_factor, Ej_factor)
+        if chance <= 0: return False
+        else: return rng.random() <= chance
 
-main()
-'''
+    def Check_Recombined(self, Ei_factor=0, Ej_factor=0):
+        chance = Recombination_Chance(Ei_factor, Ej_factor)
+        if chance <= 0: return False
+        else: return rng.random() <= chance
+
+    def Check_Inside_Trap(self):
+        if self.trap is None: return False
+        else: return self.trap[1][0] <= self.pos[0] <= self.trap[1][1] and self.trap[0][0] <= self.pos[0] <= self.trap[0][1]
+
+if __name__ == "__main__":
+
+    QP = QuasiParticle([1, 5], [[0, 10], [0, 10]], 1, [[4,8], [4,8]])
+
+    for i in range(1):
+        print(QP.pos)
+        #QP.Update_Pos()
+        print(QP.Check_Scattered(2,6))
+        print(QP.Check_Recombined())
+        print(QP.Check_Inside_Trap())

@@ -4,7 +4,7 @@ from matplotlib.path import Path
 import numpy as np
 
 import matplotlib.animation as animation
-from QuasiParticle import QausiParticle1D as QP
+from Phonon import Phonon as Phonon
 
 
 rng = np.random.default_rng()
@@ -25,10 +25,10 @@ def main():
     num_escaped = 0
     num_captured = 0
 
-    #active_qps.append(QP(random.randint(2,10), 2, random.uniform(-.2,.2), random.uniform(.05,.2), 0.1))
+    #active_qps.append(Phonon(random.randint(2,10), 2, random.uniform(-.2,.2), random.uniform(.05,.2), 0.1))
     for t in range(t0, tf):
 
-        if t % 10 == 0: active_qps.append(QP(rng.integers(2,10), 2, rng.uniform(-.2,.2), rng.uniform(.05,.2), rng.random()))
+        if t % 10 == 0: active_qps.append(Phonon(rng.integers(2,10), 2, rng.uniform(-.2,.2), rng.uniform(.05,.2), rng.random()))
 
         qp_to_delete = []
         for i, qp in zip(range(0, len(active_qps)), active_qps):
@@ -106,7 +106,7 @@ def main():
     ax.add_patch(patch)
 
     # Drawing Insulating Layer
-    ax.add_line()
+    #ax.add_line()
 
 
     plt.show()
