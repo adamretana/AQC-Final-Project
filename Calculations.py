@@ -1,7 +1,9 @@
 import numpy as np
+from scipy.special import gamma, factorial
 
 tau0 = 400 #ns characteristic_electron_phonon_time
-kB = np.power(1.380649, -23) # boltzmann_constant
+kB = 1.380649 * np.power(10.0, -23) # boltzmann_constant
+#kB = np.power(1.380649, -23)
 Tc = 1.2 # critical_temperature
 kBTc = kB*Tc
 Nqp_over_Ncp = 1 - .001 # QuasiParticle density over cooper pair density
@@ -22,7 +24,8 @@ def Scattering_Chance(Ei_factor, Ej_factor):
     Np_curr = Np(Ei_minus_Ej)
     rho = Rho(Ej)
     rate = np.power((Ei_minus_Ej),2) / (tau0 * np.power((kBTc),3)) * (1 - np.power(Delta,2) / (Ei*Ej)) * Np_curr * rho
-    return 1 - np.power(np.e, -rate)
+    #return 1 - np.power(np.e, -rate)
+    return rate
 
 def Recombination_Chance(Ei_factor, Ej_factor):
     if Ei_factor == Ej_factor: return 21.8/tau0 * Nqp_over_Ncp
@@ -34,13 +37,15 @@ def Recombination_Chance(Ei_factor, Ej_factor):
     rho = Rho(Ej)
     f = 1 / (1 + np.power(np.e, Ej/kBTc)) # occupation probability
     rate = np.power((Ei_plus_Ej),2) / (tau0 * np.power((kBTc),3)) * (1 + np.power(Delta,2) / (Ei*Ej)) * Np_curr * rho * f
-    return 1 - np.power(np.e, -rate)
+    #return 1 - np.power(np.e, -rate)
+    return rate
 
 if __name__ == "__main__":
     print(Delta)
-    E1, E2 = 2, 2
+    E1, E2 = 2.54, 2.00
     print(Scattering_Chance(E1,E2))
     print(Recombination_Chance(E1,E2))
+    #print(kB)
 
     #print(1 - np.power(np.e, -(Recombination_Rate(E1,E2))))
     #print(1 - np.power(np.e, -(Scattering_Rate(E1,E2))))

@@ -8,8 +8,10 @@ from QuasiParticle import QuasiParticle as QP
 rng = np.random.default_rng()
 
 # CONSTANTS
-t = 1000
-dt = .1
+dt = 1 # Microseconds
+print(dt)
+t_tot = 1000 * dt 
+tickrate = .05
 dist_step = .5
 substrate_Lx = 20
 substrate_Ly = 4
@@ -40,8 +42,16 @@ def main():
     errored_qps = 0
     recombined_qps = 0
 
-    for k in range(t):
+    t = 0.0
+    time_since_error = 0
+    error_time_gaps = []
+
+    while t < t_tot:
         ax.clear()
+
+        # Time Steps
+        t += dt
+        time_since_error += dt
 
         # SET CHART BOUNDS
         ax.set_xlim([0, 24])
@@ -51,7 +61,7 @@ def main():
         Substrate = patches.Rectangle((2,0), substrate_Lx, substrate_Ly, alpha=.5, color='purple')
         S_thin = patches.Rectangle((2, substrate_Ly), SC_thin_Lx, SC_thin_Ly, alpha=.5, color='blue')
         S_Thick1 = patches.Rectangle((2, substrate_Ly + SC_thin_Ly), SC_thick1_Lx, SC_thick1_Ly, alpha=.5, color='green')
-        Trap = patches.Rectangle((9,4.5), trap_Lx, trap_Ly, color='orange')
+        Trap = patches.Rectangle((9,4.5), trap_Lx, trap_Ly, color='orange', alpha=.5)
         ax.add_patch(Substrate)
         ax.add_patch(S_thin)
         ax.add_patch(S_Thick1)
@@ -69,7 +79,7 @@ def main():
         ax.add_patch(S_Thick2)
 
         # SIMULATE QPs
-        if k % 2 == 0 : 
+        for i in range(np.random.randint(0,10)) : 
             starting_y = np.random.randint(substrate_Ly,SC_thin_Ly+substrate_Ly+SC_thick1_Ly)
             if starting_y > SC_thin_Ly+substrate_Ly: barriered_qps += 1
             else: 
@@ -95,6 +105,8 @@ def main():
                 QPs_To_Delete.append(i)
             elif (14-dist_step <= qp.pos[0] <= 14+dist_step) or (13-dist_step <= qp.pos[0] <= 13+dist_step and 6-dist_step <= qp.pos[1] <= 6+dist_step):
                 errored_qps += 1
+                error_time_gaps.append(time_since_error)
+                time_since_error = 0
                 QPs_To_Delete.append(i)
         
         #print(num_trapped)
@@ -103,9 +115,10 @@ def main():
             try: QPs.pop(i)
             except: print("OF FUCK")
 
-        plt.pause(dt)
+        plt.pause(tickrate)
     plt.show()
 
     print("errored: {}, barriered: {}, Recombined: {}".format(errored_qps, barriered_qps, recombined_qps))
+    if errored_qps != 0: print("Average error time {} microseconds".format(sum(error_time_gaps)/len(error_time_gaps)))
 
 main()
