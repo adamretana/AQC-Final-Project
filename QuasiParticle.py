@@ -13,6 +13,7 @@ class QuasiParticle:
     Annihilated = False
     density_cooper_pairs = math.pow(2.8, 0^6) # 1 / micrometers^3
     band_gap_no_QPs = 1.764 * boltzmann_constant * Tc_aluminum
+    time_alive = 0 # nanoseconds
     #trapped = False
     #step_size = .5
 
@@ -24,11 +25,11 @@ class QuasiParticle:
         self.trapped = trapped
         self.step_size = step_size
 
-    def Update_Pos(self, Ei=0, Ej=0):
+    def Update_Pos(self, energy, temperature):
         move_options_x = []
         move_options_y = []
 
-        scattered = self.Check_Scattered(Ei, Ej)
+        scattered = self.Check_Scattered(energy, temperature)
 
         if self.trap != None:
             if self.Check_Inside_Trap():
@@ -71,15 +72,15 @@ class QuasiParticle:
         if move_options_y == []: move_options_y = [-1, 0, 1]
         self.pos[1] = self.pos[1] + rng.choice(move_options_y) * self.step_size
 
-    def Check_Scattered(self, Ei_factor, Ej_factor):
-        chance = Scattering_Chance(Ei_factor, Ej_factor)
-        if chance <= 0: return False
-        else: return rng.random() <= chance
+        self.time_alive += 1
 
-    def Check_Recombined(self, Ei_factor=0, Ej_factor=0):
-        chance = Recombination_Chance(Ei_factor, Ej_factor)
-        if chance <= 0: return False
-        else: return rng.random() <= chance
+    def Check_Scattered(self, energy, temperature):
+        chance = Scattering_Probability(self.time_alive, energy, temperature)
+        return rng.random() <= chance
+
+    def Check_Recombined(self, energy, temperature):
+        chance = Recombination_Probability(self.time_alive, energy, temperature)
+        return rng.random() <= chance
 
     def Check_Inside_Trap(self):
         if self.trap is None: return False
@@ -92,6 +93,6 @@ if __name__ == "__main__":
     for i in range(1):
         print(QP.pos)
         #QP.Update_Pos()
-        print(QP.Check_Scattered(20, 2))
-        print(QP.Check_Recombined())
-        print(QP.Check_Inside_Trap())
+        print(QP.Check_Scattered(2*Delta0, .5*Tc))
+        print(QP.Check_Recombined(2*Delta0, .5*Tc))
+        #print(QP.Check_Inside_Trap())

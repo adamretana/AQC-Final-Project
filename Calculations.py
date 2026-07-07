@@ -1,52 +1,44 @@
 import numpy as np
 from scipy.special import gamma, factorial
 
-tau0 = 400 #ns characteristic_electron_phonon_time
-kB = 1.380649 * np.power(10.0, -23) # boltzmann_constant
-#kB = np.power(1.380649, -23)
-Tc = 1.2 # critical_temperature
+tau0 = 438 #ns characteristic_electron_phonon_time
+kB = 8.617 * np.power(10.0, -5) # eV/K boltzmann_constant
+Tc = 1.19 # K critical_temperature
 kBTc = kB*Tc
-Nqp_over_Ncp = 1 - .001 # QuasiParticle density over cooper pair density
-Delta = 1.764 * kBTc * Nqp_over_Ncp # energy_band_gap_with_qps
+#Nqp_over_Ncp = 1 - .001 # QuasiParticle density over cooper pair density
+Delta0 = 1.764 * kBTc  # fermi_energy_level
+gamma_zeta_constant = 3.74453 # Gamma[3.5] * Zeta[3.5]
 
+def Scattering_Lifetime_Limit(energy_omega):
+    a = 1.764 # constant of Delta0
+    ratio_omega_delta = energy_omega/Delta0
 
-def Np(Energy): 
-    return 1 / abs(np.power(np.e, -(Energy)/kBTc) - 1) # phonon_occupation_factor
-def Rho(Energy):
-    return Energy / np.emath.sqrt(np.power(Energy,2) - np.power(Delta,2)) # normalized density of quasiparticle states
+    limit = tau0 / (np.power(a,3) * (((1/3)*np.power((ratio_omega_delta**2-1),3/2)) + (5/2)*np.power((ratio_omega_delta**2-1),.5) - (1/(2*ratio_omega_delta)) * (1+4*ratio_omega_delta**2) * np.log(ratio_omega_delta+np.power((ratio_omega_delta**2-1),.5))))
+    return limit
+def Scattering_Lifetime(energy_omega, temperature):
+    tau_s = tau0 / (gamma_zeta_constant * np.power((kB*Tc/energy_omega),.5)*np.power((temperature/Tc),3.5))
+    if energy_omega > Delta0: 
+        limit = Scattering_Lifetime_Limit(energy_omega)
+        return limit*tau_s / (limit+tau_s)
+    else:
+        return tau_s
+def Scattering_Probability(time, energy_omega, temperature):
+    lifetime = Scattering_Lifetime(energy_omega, temperature)
+    return 1-np.e**(-time/lifetime)
 
-def Scattering_Chance(Ei_factor, Ej_factor):
-    if Ei_factor == Ej_factor: return 0
-    Ei = Ei_factor * kBTc
-    Ej = Ej_factor * kBTc
-    if Ej < Delta: return 0
-    Ei_minus_Ej = Ei-Ej
-    Np_curr = Np(Ei_minus_Ej)
-    rho = Rho(Ej)
-    rate = np.power((Ei_minus_Ej),2) / (tau0 * np.power((kBTc),3)) * (1 - np.power(Delta,2) / (Ei*Ej)) * Np_curr * rho
-    #return 1 - np.power(np.e, -rate)
-    return rate
-
-def Recombination_Chance(Ei_factor, Ej_factor):
-    if Ei_factor == Ej_factor: return 21.8/tau0 * Nqp_over_Ncp
-    Ei = Ei_factor * kBTc
-    Ej = Ej_factor * kBTc
-    if Ej < Delta: return 0
-    Ei_plus_Ej = Ei+Ej
-    Np_curr = Np(Ei_plus_Ej)
-    rho = Rho(Ej)
-    f = 1 / (1 + np.power(np.e, Ej/kBTc)) # occupation probability
-    rate = np.power((Ei_plus_Ej),2) / (tau0 * np.power((kBTc),3)) * (1 + np.power(Delta,2) / (Ei*Ej)) * Np_curr * rho * f
-    #return 1 - np.power(np.e, -rate)
-    return rate
+def Recombination_Lifetime(energy_omega, temperature):
+    tau_r = tau0 / (np.pi**(1/2) * (energy_omega/kBTc)**(5/2) * (temperature/Tc)**(1/2) * np.power(np.e, -Delta0/(kB*temperature)))
+    return tau_r
+def Recombination_Probability(time, energy_omega, temperature):
+    lifetime = Recombination_Lifetime(energy_omega, temperature)
+    return 1-np.e**(-time/lifetime)
 
 if __name__ == "__main__":
-    print(Delta)
-    E1, E2 = 2.54, 2.00
-    print(Scattering_Chance(E1,E2))
-    print(Recombination_Chance(E1,E2))
-    #print(kB)
+    E = 4*Delta0
+    T = 20 * 10**-3
+    print(Scattering_Probability(1, E, T))
+    print(Recombination_Probability(1, E, T))
 
-    #print(1 - np.power(np.e, -(Recombination_Rate(E1,E2))))
-    #print(1 - np.power(np.e, -(Scattering_Rate(E1,E2))))
-
+    L1 = [1, 0]
+    L2 = [0, 1]
+    print(list(map(lambda x, y: x + y, L1, L2)))
